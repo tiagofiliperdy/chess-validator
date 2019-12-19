@@ -14,6 +14,7 @@ class ControllerSpec extends AnyWordSpec with Matchers {
       val controller = new Controller(file1) with MockOutput
 
       controller.init()
+
       controller.messages must contain(s"File with path '$file1' has reached an empty line.")
     }
 
