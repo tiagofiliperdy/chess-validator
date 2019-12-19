@@ -1,7 +1,8 @@
 package chess
 
 import chess.pieces._
-import chess.positions.Position
+import chess.positions.Directions.Direction
+import chess.positions.{Directions, Position}
 
 import scala.collection.immutable.HashMap
 
@@ -34,6 +35,61 @@ object Board {
     piece: Piece,
     move: Move
   ): HashMap[Position, Piece] = (board - move.from) + ((move.to, piece))
+
+  def isKingInCheck(
+    board: HashMap[Position, Piece],
+    color: Color
+  ): Boolean = {
+    val king: Option[(Position, Piece)] = board.find {
+      case (_, k @ King(_, _)) => k.color.equals(color)
+      case _                   => false
+    }
+    val knights: Set[(Position, Piece)] = board.filter {
+      case (_, n @ Knight(_, _)) => !n.color.equals(color)
+      case _                     => false
+    }.toSet
+
+    king.exists { k =>
+      val kingPos = k._1
+      val nearestPosPieces = Directions.all.flatMap { dir =>
+        nearestPositionWithPiece(board, dir, kingPos.file + dir.shift._1, kingPos.rank + dir.shift._2, color)
+      } ++ knights.map(_._1)
+
+      nearestPosPieces.exists { pos =>
+        board(pos).isValidMove(pos, kingPos, board)
+      }
+    }
+  }
+
+  /**
+    * Finds nearest positions with pieces of different color, excluding knights.
+    * @param board
+    * @param dir
+    * @param file
+    * @param rank
+    * @param color
+    * @return
+    */
+  def nearestPositionWithPiece(
+    board: HashMap[Position, Piece],
+    dir: Direction,
+    file: File,
+    rank: Rank,
+    color: Color
+  ): Option[Position] =
+    (positionExists(file, rank), board.get(Position(file, rank))) match {
+      case (true, Some(p)) if !p.color.equals(color) =>
+        Some(Position(file, rank))
+      case (true, _) =>
+        nearestPositionWithPiece(board, dir, file + dir.shift._1, rank + dir.shift._2, color)
+      case _ =>
+        None
+    }
+
+  def positionExists(
+    file: File,
+    rank: Rank
+  ): Boolean = List(file, rank).forall(dimension.contains)
 
   private def generatePieces(
     start: Int,

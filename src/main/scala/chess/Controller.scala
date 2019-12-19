@@ -1,8 +1,6 @@
 package chess
 
-import java.io.FileNotFoundException
-
-import chess.pieces.Piece
+import chess.pieces.{Color, Piece}
 import chess.positions.Position
 import com.whitehatgaming.UserInputFile
 
@@ -15,18 +13,16 @@ class Controller(filePath: String) extends Output {
   def init(): Unit = {
     val result =
       for {
-        uI <- Try(new UserInputFile(filePath)).toEither
-        nextMove <- Option(uI.nextMove())
-          .map(_.toList)
-          .toRight(new InterruptedException(s"File with path '$filePath' is empty."))
+        uI <- Try(new UserInputFile(filePath)).toEither.left.map(_ => FileNotExistError(filePath).errorMsg)
+        nextMove <- handleNextMove(uI, EmptyFileError(filePath))
         board = Board.createBoard
         _ = println(">>> Game Begins!")
-      } yield loop(uI, nextMove, board, List(board))
+        res <- loop(uI, nextMove, board, List(board))
+      } yield res
 
     result match {
-      case Left(_: FileNotFoundException) => println(s"File with path '$filePath' doesn't exist.")
-      case Left(e: InterruptedException)  => println(e.getMessage)
-      case Right(_)                       => println(">>> Game Ended :D")
+      case Left(e)  => println(e)
+      case Right(_) => println(">>> Game Ended :D")
     }
   }
 
@@ -35,38 +31,42 @@ class Controller(filePath: String) extends Output {
     moveCoordinates: List[Int],
     board: HashMap[Position, Piece],
     history: List[HashMap[Position, Piece]]
-  ): Unit = {
+  ): Either[String, Unit] = {
     val move = Move(moveCoordinates)
 
-    val result =
-      for {
-        piece <- board.get(move.from).toRight(">>> No piece on starting move position!")
-        dstInsideBoard = move.isToPositionInsideBoard
-        res <- {
-          if (dstInsideBoard && piece.isValidMove(move.from, move.to, board)) {
-            val updatedBoard = Board.updateBoard(board, piece, move)
+    for {
+      piece <- board.get(move.from).toRight(">>> No piece on starting move position!")
+      dstInsideBoard = move.isToPositionInsideBoard
+      pieceColor = piece.color
+      res <- {
+        if (dstInsideBoard && piece.isValidMove(move.from, move.to, board)) {
+          val updatedBoard = Board.updateBoard(board, piece, move)
+          // finds king of 'pieceColor' and validates if it is in check
+          if (Board.isKingInCheck(updatedBoard, pieceColor)) {
+            Left(s">>> Invalid move, ${move.toString}, it leaves your King in check.")
+          } else {
             Board.print(updatedBoard)
-            Try(uI.nextMove()).toEither
-              .map { nextMove =>
-                println(">>> Next Player")
-                loop(uI, nextMove.toList, updatedBoard, updatedBoard :: history)
-              }
-              .left
-              .map(_ => s">>> File with path '$filePath' has reached EOF.")
-          } else Left(s">>> Invalid move, ${move.toString}")
-        }
-      } yield res
+            handleNextMove(uI, EOFError(filePath)).flatMap { next =>
+              println(">>> Next Player")
+              printCheckInfo(updatedBoard, piece.opponentColor)
+              loop(uI, next, updatedBoard, updatedBoard :: history)
+            }
+          }
+        } else Left(s">>> Invalid move, ${move.toString}")
+      }
+    } yield res
+  }
 
-    result match {
-      case Left(e) => handleError(e)
-      case _       => ()
+  def printCheckInfo(
+    board: HashMap[Position, Piece],
+    color: Color
+  ): Unit = if (Board.isKingInCheck(board, color)) println(">>> King is in Check!!!")
+
+  def handleNextMove(
+    uI: UserInputFile,
+    error: InputFileError
+  ): Either[String, List[Int]] =
+    Try(uI.nextMove()).toEither.left.map(_ => error.errorMsg).flatMap { nextMoveRaw =>
+      Option(nextMoveRaw).map(_.toList).toRight(error.errorMsg)
     }
-  }
-
-  def handleError(message: String): Unit = {
-    println(message)
-    println(">>> Press Any to exit the game<<<")
-    StdIn.readLine()
-    ()
-  }
 }

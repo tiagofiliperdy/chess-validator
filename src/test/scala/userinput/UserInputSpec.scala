@@ -15,7 +15,7 @@ class UserInputSpec extends AnyWordSpec with Matchers {
 
       controller.init()
 
-      controller.messages should contain(s"File with path '$emptyFile' is empty.")
+      controller.messages should contain(s"File with path '$emptyFile' has reached EOF.")
     }
 
     "handle non existing file" in {
