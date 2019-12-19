@@ -4,8 +4,7 @@ import chess.pieces.{Color, Piece}
 import chess.positions.Position
 import com.whitehatgaming.UserInputFile
 
-import scala.collection.immutable.HashMap
-import scala.io.StdIn
+import scala.collection.immutable.Map
 import scala.util.Try
 
 class Controller(filePath: String) extends Output {
@@ -29,8 +28,8 @@ class Controller(filePath: String) extends Output {
   def loop(
     uI: UserInputFile,
     moveCoordinates: List[Int],
-    board: HashMap[Position, Piece],
-    history: List[HashMap[Position, Piece]]
+    board: Map[Position, Piece],
+    history: List[Map[Position, Piece]]
   ): Either[String, Unit] = {
     val move = Move(moveCoordinates)
 
@@ -58,7 +57,7 @@ class Controller(filePath: String) extends Output {
   }
 
   def printCheckInfo(
-    board: HashMap[Position, Piece],
+    board: Map[Position, Piece],
     color: Color
   ): Unit = if (Board.isKingInCheck(board, color)) println(">>> King is in Check!!!")
 

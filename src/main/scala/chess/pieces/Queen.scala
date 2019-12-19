@@ -3,7 +3,7 @@ package chess.pieces
 import chess.positions.Directions.Direction
 import chess.positions.{Directions, Position}
 
-import scala.collection.immutable.HashMap
+import scala.collection.immutable.Map
 
 final case class Queen(
   sourcePosition: Position,
@@ -14,7 +14,7 @@ final case class Queen(
   override def isValidMove(
     from: Position,
     to: Position,
-    board: HashMap[Position, Piece]
+    board: Map[Position, Piece]
   ): Boolean = {
     val (fileDiff, rankDiff) = from.diff(to)
 

@@ -3,7 +3,7 @@ package chess.pieces
 import chess.positions.Directions.Direction
 import chess.positions.Position
 
-import scala.collection.immutable.HashMap
+import scala.collection.immutable.Map
 
 final case class Knight(
   sourcePosition: Position,
@@ -17,7 +17,7 @@ final case class Knight(
   override def isValidMove(
     from: Position,
     to: Position,
-    board: HashMap[Position, Piece]
+    board: Map[Position, Piece]
   ): Boolean = {
     val isTakingOwnPiece = board.get(to).map(_.color).contains(color)
     val diff = from.diff(to)

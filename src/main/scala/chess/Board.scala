@@ -4,14 +4,14 @@ import chess.pieces._
 import chess.positions.Directions.Direction
 import chess.positions.{Directions, Position}
 
-import scala.collection.immutable.HashMap
+import scala.collection.immutable.Map
 
 object Board {
   val horizontal = ('a' to 'h')
   val vertical = (1 to 8).reverse
   val dimension = (0 to 7)
 
-  def createBoard: HashMap[Position, Piece] = {
+  def createBoard: Map[Position, Piece] = {
     val pWhiteStart = dimension.end
     val pWhitePawnStart = pWhiteStart - 1
     val pBlackStart = dimension.start
@@ -20,8 +20,8 @@ object Board {
     val whitePieces = generatePieces(pWhiteStart, pWhitePawnStart).map(_.differentiatePlayer)
     val blackPieces = generatePieces(pBlackStart, pBlackPawnStart)
 
-    val piecesMap: HashMap[Position, Piece] =
-      (whitePieces ++ blackPieces).foldLeft(HashMap[Position, Piece]()) { (acc, next) =>
+    val piecesMap: Map[Position, Piece] =
+      (whitePieces ++ blackPieces).foldLeft(Map[Position, Piece]()) { (acc, next) =>
         acc + (next.sourcePosition -> next)
       }
 
@@ -31,13 +31,13 @@ object Board {
   }
 
   def updateBoard(
-    board: HashMap[Position, Piece],
+    board: Map[Position, Piece],
     piece: Piece,
     move: Move
-  ): HashMap[Position, Piece] = (board - move.from) + ((move.to, piece))
+  ): Map[Position, Piece] = (board - move.from) + ((move.to, piece))
 
   def isKingInCheck(
-    board: HashMap[Position, Piece],
+    board: Map[Position, Piece],
     color: Color
   ): Boolean = {
     val king: Option[(Position, Piece)] = board.find {
@@ -71,7 +71,7 @@ object Board {
     * @return
     */
   def nearestPositionWithPiece(
-    board: HashMap[Position, Piece],
+    board: Map[Position, Piece],
     dir: Direction,
     file: File,
     rank: Rank,
@@ -106,7 +106,7 @@ object Board {
       Rook(Position(7, start))
     ) ++ dimension.map(file => Pawn(Position(file, pawnStart))).toList
 
-  def print(board: HashMap[Position, Piece]): Unit = {
+  def print(board: Map[Position, Piece]): Unit = {
     val filesRow = horizontal.mkString("  | ", "|", " |")
     val separator = """--+--+-+-+-+-+-+-+--+--"""
 

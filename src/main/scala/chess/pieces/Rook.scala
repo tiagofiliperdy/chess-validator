@@ -3,7 +3,7 @@ package chess.pieces
 import chess.positions.Directions._
 import chess.positions.Position
 
-import scala.collection.immutable.HashMap
+import scala.collection.immutable.Map
 
 final case class Rook(
   sourcePosition: Position,
@@ -16,7 +16,7 @@ final case class Rook(
   override def isValidMove(
     from: Position,
     to: Position,
-    board: HashMap[Position, Piece]
+    board: Map[Position, Piece]
   ): Boolean =
     from.diff(to) match {
       case (0, y) if y != 0 => super.isValidMove(from, to, board)
