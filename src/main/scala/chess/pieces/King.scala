@@ -19,7 +19,7 @@ final case class King(
     board: HashMap[Position, Piece]
   ): Boolean = {
     val isTakingOwnPiece = board.get(to).map(_.color).contains(color)
-    //TODO: validate if 'to' is a check position
+
     from.diff(to) match {
       case (0, y) => Math.abs(y) == 1 && !isTakingOwnPiece
       case (x, 0) => Math.abs(x) == 1 && !isTakingOwnPiece
