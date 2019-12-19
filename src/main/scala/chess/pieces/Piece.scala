@@ -13,6 +13,7 @@ trait Piece {
   def identifier: String
   def differentiatePlayer: Piece
   def color: Color = if (identifier.charAt(0).isUpper) White else Black
+  def opponentColor: Color = if (identifier.charAt(0).isUpper) Black else White
 
   /**
     * Validates moves between two positions, excluding start and end, when distance is greater than one.
@@ -30,7 +31,7 @@ trait Piece {
     val isTakingOwnPiece = board.get(to).map(_.color).contains(color)
     val isPathEmpty =
       from.diff(to) match {
-        case (x, y) if Math.abs(x) > 1 && Math.abs(y) > 1 =>
+        case (x, y) if Math.abs(x) > 1 || Math.abs(y) > 1 =>
           val filesToCheck = inBetweenCoordinates(from.file, to.file)
           val ranksToCheck = inBetweenCoordinates(from.rank, to.rank)
 
