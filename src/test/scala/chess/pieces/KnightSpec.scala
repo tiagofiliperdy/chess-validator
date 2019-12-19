@@ -25,11 +25,15 @@ class KnightSpec extends AnyWordSpec with Matchers {
 
     "move L shape" in {
       val oneSquare2side = Move(Position(1, 0), Position(0, 2))
-      val board1 = Board.updateBoard(board, board(oneSquare2side.from), oneSquare2side)
       val knight1 = board(oneSquare2side.from)
+      val board1 = Board.updateBoard(board, board(oneSquare2side.from), oneSquare2side)
 
       knight1.isValidMove(oneSquare2side.from, oneSquare2side.to, board) mustBe true
-      // TODO: test the 8 possible moves of horse
+
+      val twoSide1square = Move(Position(0, 2), Position(2, 3))
+      val knight2 = board1(twoSide1square.from)
+
+      knight2.isValidMove(twoSide1square.from, twoSide1square.to, board) mustBe true
     }
 
     "move vertical" in {

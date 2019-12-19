@@ -58,6 +58,34 @@ class RookSpec extends AnyWordSpec with Matchers {
 
       rook.isValidMove(moveDiagonal.from, moveDiagonal.to, afterVerticalMove) mustBe false
     }
+
+    "not move over other pieces" in {
+      val move1 = Move(Position(0, 7), Position(0, 5))
+      val afterVerticalMove = Board.updateBoard(board, board(move1.from), move1)
+
+      val moveHorizontal = Move(Position(0, 5), Position(4, 5))
+      val newBoard = Board.updateBoard(afterVerticalMove, afterVerticalMove(moveHorizontal.from), moveHorizontal)
+
+      val move2 = Move(Position(4, 5), Position(4, 0))
+
+      val rook = newBoard(move2.from)
+
+      rook.isValidMove(move2.from, move2.to, newBoard) mustBe false
+    }
+
+    "take opponent pieces" in {
+      val move1 = Move(Position(0, 7), Position(0, 5))
+      val afterVerticalMove = Board.updateBoard(board, board(move1.from), move1)
+
+      val moveHorizontal = Move(Position(0, 5), Position(4, 5))
+      val newBoard = Board.updateBoard(afterVerticalMove, afterVerticalMove(moveHorizontal.from), moveHorizontal)
+
+      val move2 = Move(Position(4, 5), Position(4, 1))
+
+      val rook = newBoard(move2.from)
+
+      rook.isValidMove(move2.from, move2.to, newBoard) mustBe true
+    }
   }
 
 }
