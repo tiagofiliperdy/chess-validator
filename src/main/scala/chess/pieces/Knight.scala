@@ -1,9 +1,12 @@
 package chess.pieces
 
+import cats.data.Validated
+import cats.implicits._
+import chess.Move
+import chess.app.Configuration.IsValid
+import chess.board.Board
 import chess.positions.Directions.Direction
 import chess.positions.Position
-
-import scala.collection.immutable.Map
 
 final case class Knight(
   sourcePosition: Position,
@@ -14,18 +17,22 @@ final case class Knight(
 
   override def differentiatePlayer: Piece = Knight(sourcePosition, identifier.toUpperCase)
 
-  override def isValidMove(
-    from: Position,
-    to: Position,
-    board: Map[Position, Piece]
-  ): Boolean = {
-    val isTakingOwnPiece = board.get(to).map(_.color).contains(color)
-    val diff = from.diff(to)
+  override def isValidMoveV2(
+    move: Move,
+    board: Board
+  ): IsValid[Move] = {
+    val diff = move.from.diff(move.to)
+    val knightRule =
+      Validated.condNec(
+        (Math.abs(diff._1), Math.abs(diff._2)) match {
+          case (1, 2) => true
+          case (2, 1) => true
+          case _      => false
+        },
+        move,
+        "Knight has to move in an L shape!"
+      )
 
-    (Math.abs(diff._1), Math.abs(diff._2)) match {
-      case (1, 2) => !isTakingOwnPiece
-      case (2, 1) => !isTakingOwnPiece
-      case _      => false
-    }
+    (knightRule, super.isValidMoveV2(move, board)).mapN((m, _) => m)
   }
 }

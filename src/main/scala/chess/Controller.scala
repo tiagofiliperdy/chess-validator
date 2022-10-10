@@ -1,71 +1,83 @@
 package chess
 
-import chess.pieces.{Color, Piece}
+import cats.MonadError
+import cats.data.Validated
+import cats.implicits._
+import chess.app.Configuration.{AppOp, Error, readEnv}
+import chess.app.Syntax._
+import chess.board.Board
 import chess.positions.Position
-import com.whitehatgaming.UserInputFile
 
-import scala.collection.immutable.Map
-import scala.util.Try
+//TODO: Game is not 100% working, because of:
+//  - There is no logic to evaluate check-mate
+//  - Since there is no check-mate can't say a game is over, so code runs forever.
+//  To change the above logic for check-mate needs to be implemented, at the end of each round
+//  validate it, if it's check-mate then break the loop.
+object Controller {
+  case class UserInputPlay(
+    from: Position,
+    to: Position
+  )
 
-class Controller(filePath: String) extends Output {
+  val ME = MonadError[AppOp, Error]
 
-  def init(): Unit = {
-    val result =
+  def run(): AppOp[Unit] = {
+
+    def recovery: Error => AppOp[Boolean] = { error: Error =>
       for {
-        uI <- Try(new UserInputFile(filePath)).toEither.left.map(_ => FileNotExistError(filePath).errorMsg)
-        nextMove <- handleNextMove(uI, EmptyFileError(filePath))
-        board = Board.createBoard
-        _ = println(">>> Game Begins!")
-        res <- loop(uI, nextMove, board, List(board))
-      } yield res
-
-    result match {
-      case Left(e)  => println(e)
-      case Right(_) => println(">>> Game Ended :D")
+        env <- readEnv
+        _ <- env.console.printLines(error).toAppOp
+      } yield false
     }
+    // TODO: the recovery is starting the game with new BoardState, it should remain the same
+
+    setupGame >> ME.iterateUntil(ME.handleErrorWith(game())(recovery))(identity).void
   }
 
-  def loop(
-    uI: UserInputFile,
-    moveCoordinates: List[Int],
-    board: Map[Position, Piece],
-    history: List[Map[Position, Piece]]
-  ): Either[String, Unit] = {
-    val move = Move(moveCoordinates)
-
+  def setupGame: AppOp[Unit] =
     for {
-      piece <- board.get(move.from).toRight(">>> No piece on starting move position!")
-      dstInsideBoard = move.isToPositionInsideBoard
-      pieceColor = piece.color
-      res <- {
-        if (dstInsideBoard && piece.isValidMove(move.from, move.to, board)) {
-          val updatedBoard = Board.updateBoard(board, piece, move)
-          // finds king of 'pieceColor' and validates if it is in check
-          if (Board.isKingInCheck(updatedBoard, pieceColor)) {
-            Left(s">>> Invalid move, ${move.toString}, it leaves your King in check.")
-          } else {
-            Board.print(updatedBoard)
-            handleNextMove(uI, EOFError(filePath)).flatMap { next =>
-              println(">>> Next Player")
-              printCheckInfo(updatedBoard, piece.opponentColor)
-              loop(uI, next, updatedBoard, updatedBoard :: history)
-            }
-          }
-        } else Left(s">>> Invalid move, ${move.toString}")
-      }
-    } yield res
-  }
+      env <- readEnv
+      _ <- env.console.printLine(">>> Game Begins!").toAppOp
+      state <- env.boardService.currentState.toAppOp
+      _ <- env.console.printLine(state.show).toAppOp
+    } yield ()
 
-  def printCheckInfo(
-    board: Map[Position, Piece],
-    color: Color
-  ): Unit = if (Board.isKingInCheck(board, color)) println(">>> King is in Check!!!")
+  def readPlay: AppOp[UserInputPlay] =
+    for {
+      env <- readEnv
+      line <- env.console.readLine(">>> Player 1 play:").toAppOp
+      positions <- Position(line).toAppOp
+    } yield UserInputPlay(positions._1, positions._2)
 
-  def handleNextMove(
-    uI: UserInputFile,
-    error: InputFileError
-  ): Either[String, List[Int]] =
-    Try(uI.nextMove()).toEither.left.map(_ => error.errorMsg).flatMap { nextMoveRaw =>
-      Option(nextMoveRaw).map(_.toList).toRight(error.errorMsg)
-    }
+  def validatePlay(
+    input: UserInputPlay,
+    board: Board
+  ): AppOp[Move] =
+    for {
+      move <- Move(board, input.from, input.to).toAppOp
+      _ <- move.piece.isValidMoveV2(move, board).toAppOp
+      kingInCheck <- Board.isKingInCheck(board, move).toAppOp
+      _ <- if (kingInCheck) Validated.invalidNec("Move is invalid, you can't leave your king in check!").toAppOp
+      else ().pure[AppOp]
+    } yield move
+
+  def updateBoard(move: Move): AppOp[Unit] =
+    for {
+      env <- readEnv
+      newBoard <- env.boardService.updateBoard(move).toAppOp
+      _ <- env.console.printLine(newBoard.show).toAppOp
+    } yield ()
+
+  def game(): AppOp[Boolean] =
+    for {
+      env <- readEnv
+      userInput <- readPlay
+      boardState <- env.boardService.currentState.toAppOp
+      move <- validatePlay(userInput, boardState.board)
+      _ <- updateBoard(move)
+      weHaveWinner <- isGameFinished()
+    } yield weHaveWinner
+
+  // simulates the check-mate logic
+  def isGameFinished(): AppOp[Boolean] = Validated.valid(false).toAppOp
 }

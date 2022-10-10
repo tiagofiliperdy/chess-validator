@@ -1,9 +1,12 @@
 package chess.pieces
 
+import cats.data.Validated
+import cats.implicits._
+import chess.Move
+import chess.app.Configuration.IsValid
+import chess.board.Board
 import chess.positions.Directions._
 import chess.positions.Position
-
-import scala.collection.immutable.Map
 
 final case class Bishop(
   sourcePosition: Position,
@@ -11,23 +14,25 @@ final case class Bishop(
 ) extends Piece {
   override val directions: Set[Direction] = Set(NE, SE, NW, SW)
 
-  override def isValidMove(
-    from: Position,
-    to: Position,
-    board: Map[Position, Piece]
-  ): Boolean = {
-    val (fileDiff, rankDiff) = from.diff(to)
-
+  override def isValidMoveV2(
+    move: Move,
+    board: Board
+  ): IsValid[Move] = {
+    val (fileDiff, rankDiff) = move.from.diff(move.to)
     (fileDiff, rankDiff) match {
       case (x, y) if x != 0 && y != 0 =>
-        directions.map(_.shift).contains(fileDiff / Math.abs(fileDiff), rankDiff / Math.abs(rankDiff)) && super
-          .isValidMove(
-            from,
-            to,
-            board
+        val bishopRule =
+          Validated.condNec(
+            directions.map(_.shift).contains((fileDiff / Math.abs(fileDiff), rankDiff / Math.abs(rankDiff))),
+            move,
+            "Move is not valid for a Bishop!"
           )
-      case _ => false
+
+        (bishopRule, super.isValidMoveV2(move, board)).mapN((m, _) => m)
+      case _ =>
+        Validated.invalidNec("Move does not obey to Bishop basic rules of moving diagonally!")
     }
+
   }
 
   override def differentiatePlayer: Piece = Bishop(sourcePosition, identifier.toUpperCase())

@@ -1,10 +1,12 @@
 package chess.pieces
 
-import chess.{File, Rank}
+import cats.data.Validated
+import cats.implicits._
+import chess.app.Configuration.IsValid
+import chess.board.Board
 import chess.positions.Directions.Direction
 import chess.positions.Position
-
-import scala.collection.immutable.Map
+import chess.{File, Move, Rank}
 
 trait Piece {
   val directions: Set[Direction]
@@ -18,35 +20,59 @@ trait Piece {
   /**
     * Validates moves between two positions, excluding start and end, when distance is greater than one.
     * Works for Rooks, Bishops and Queens.
-    * @param from source position.
-    * @param to destination position.
-    * @param board current board state.
-    * @return Boolean.
+    * @param move
+    * @param board
+    * @return
     */
-  def isValidMove(
-    from: Position,
-    to: Position,
-    board: Map[Position, Piece]
-  ): Boolean = {
-    val isTakingOwnPiece = board.get(to).map(_.color).contains(color)
-    val isPathEmpty =
-      from.diff(to) match {
-        case (x, y) if Math.abs(x) > 1 || Math.abs(y) > 1 =>
-          val filesToCheck = inBetweenCoordinates(from.file, to.file)
-          val ranksToCheck = inBetweenCoordinates(from.rank, to.rank)
-
-          zipCoordinates(filesToCheck, ranksToCheck).forall(pos => board.get(Position(pos._1, pos._2)).isEmpty)
-        case _ => true
-      }
-
-    isPathEmpty && !isTakingOwnPiece
-  }
+  def isValidMoveV2(
+    move: Move,
+    board: Board
+  ): IsValid[Move] =
+    (Piece.isNotTakingOwnPiece(move, board, color), Piece.isPathEmpty(move, board)).mapN((_, _) => move)
 
   def zipCoordinates(
     files: List[File],
     ranks: List[Rank]
   ): List[(File, Rank)] =
     files.zipAll(ranks, files.head, ranks.head)
+
+}
+
+object Piece {
+
+  def isNotTakingOwnPiece(
+    move: Move,
+    board: Board,
+    color: Color
+  ): IsValid[Move] =
+    Validated.condNec(
+      !board.board.get(move.to).map(_.color).contains(color),
+      move,
+      "Move is not valid, To position contains piece of same color!"
+    )
+
+  def isPathEmpty(
+    move: Move,
+    board: Board
+  ): IsValid[Move] =
+    Validated.condNec(
+      move.from.diff(move.to) match {
+        case (x, y) if Math.abs(x) > 1 || Math.abs(y) > 1 =>
+          val filesToCheck = inBetweenCoordinates(move.from.file, move.to.file)
+          val ranksToCheck = inBetweenCoordinates(move.from.rank, move.to.rank)
+
+          filesToCheck
+            .zip(ranksToCheck)
+            .traverse(pos => Position(pos._1, pos._2).map(p => !board.board.contains(p)))
+            .map(_.forall(identity)) match {
+            case Validated.Valid(_)   => true
+            case Validated.Invalid(_) => false
+          }
+        case _ => true
+      },
+      move,
+      "Move is not valid, the piece can't jump other pieces!"
+    )
 
   /**
     * Generates board numbers representing Files/Ranks to check.
@@ -58,7 +84,7 @@ trait Piece {
     * @param to
     * @return
     */
-  def inBetweenCoordinates(
+  private def inBetweenCoordinates(
     from: Int,
     to: Int
   ): List[Int] =
@@ -67,5 +93,4 @@ trait Piece {
       case (_, true) => ((from + 1) until to).toList
       case (_, _)    => ((to + 1) until from).toList.reverse
     }
-
 }

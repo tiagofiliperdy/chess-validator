@@ -1,9 +1,12 @@
 package chess.pieces
 
+import cats.data.Validated
+import cats.implicits._
+import chess.Move
+import chess.app.Configuration.IsValid
+import chess.board.Board
 import chess.positions.Directions._
 import chess.positions.Position
-
-import scala.collection.immutable.Map
 
 final case class Rook(
   sourcePosition: Position,
@@ -13,14 +16,21 @@ final case class Rook(
 
   override def differentiatePlayer: Piece = Rook(sourcePosition, identifier.toUpperCase)
 
-  override def isValidMove(
-    from: Position,
-    to: Position,
-    board: Map[Position, Piece]
-  ): Boolean =
-    from.diff(to) match {
-      case (0, y) if y != 0 => super.isValidMove(from, to, board)
-      case (x, 0) if x != 0 => super.isValidMove(from, to, board)
-      case _                => false
-    }
+  override def isValidMoveV2(
+    move: Move,
+    board: Board
+  ): IsValid[Move] = {
+    val rookRule =
+      Validated.condNec(
+        move.from.diff(move.to) match {
+          case (0, y) if y != 0 => true
+          case (x, 0) if x != 0 => true
+          case _                => false
+        },
+        move,
+        "Rook invalid move!"
+      )
+
+    (rookRule, super.isValidMoveV2(move, board)).mapN((m, _) => m)
+  }
 }

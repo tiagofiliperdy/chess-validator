@@ -1,10 +1,12 @@
 package chess.pieces
 
-import chess.File
+import cats.data.Validated
+import cats.implicits._
+import chess.app.Configuration.IsValid
+import chess.board.Board
 import chess.positions.Directions.Direction
 import chess.positions.Position
-
-import scala.collection.immutable.Map
+import chess.{File, Move}
 
 final case class Pawn(
   sourcePosition: Position,
@@ -17,18 +19,22 @@ final case class Pawn(
 
   override def differentiatePlayer: Piece = Pawn(sourcePosition, identifier.toUpperCase())
 
-  override def isValidMove(
-    from: Position,
-    to: Position,
-    board: Map[Position, Piece]
-  ): Boolean = {
-    val isTakingOwnPiece = board.get(to).map(_.color).contains(color)
+  override def isValidMoveV2(
+    move: Move,
+    board: Board
+  ): IsValid[Move] = {
+    val pawnRule =
+      Validated.condNec(
+        move.from.diff(move.to) match {
+          case (0, y) if y == offset                                          => !board.board.contains(move.to)
+          case (0, y) if Math.abs(y) == 2 && move.from.equals(sourcePosition) => !board.board.contains(move.to)
+          case (x, y) if Math.abs(x) == 1 && Math.abs(y) == 1                 => board.board.contains(move.to)
+          case _                                                              => false
+        },
+        move,
+        "Pawn invalid move!"
+      )
 
-    from.diff(to) match {
-      case (0, y) if y == offset                                     => board.get(to).isEmpty && !isTakingOwnPiece
-      case (0, y) if Math.abs(y) == 2 && from.equals(sourcePosition) => board.get(to).isEmpty && !isTakingOwnPiece
-      case (x, y) if Math.abs(x) == 1 && Math.abs(y) == 1            => board.get(to).isDefined && !isTakingOwnPiece
-      case _                                                         => false
-    }
+    (pawnRule, super.isValidMoveV2(move, board)).mapN((m, _) => m)
   }
 }

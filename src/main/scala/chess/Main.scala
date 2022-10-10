@@ -1,7 +1,18 @@
 package chess
 
-object Main extends App {
-  val fileName = "src/main/resources/data/moves.txt"
+import cats.effect.unsafe.implicits.global
+import chess.app.Configuration.liveEnv
+import chess.board.BoardService.BoardState
 
-  new Controller(fileName).init()
+//TODO:
+//  - create property based tests
+//  - Create switch turns and player validations
+object Main extends App {
+
+  Controller
+    .run()
+    .run(liveEnv)
+    .run(BoardState.beginning)
+    .value
+    .unsafeRunSync()
 }

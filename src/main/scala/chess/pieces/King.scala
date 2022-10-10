@@ -1,9 +1,12 @@
 package chess.pieces
 
+import cats.data.Validated
+import cats.implicits._
+import chess.Move
+import chess.app.Configuration.IsValid
+import chess.board.Board
 import chess.positions.Directions.Direction
 import chess.positions.{Directions, Position}
-
-import scala.collection.immutable.Map
 
 final case class King(
   sourcePosition: Position,
@@ -13,17 +16,22 @@ final case class King(
 
   override def differentiatePlayer: Piece = King(sourcePosition, identifier.toUpperCase())
 
-  override def isValidMove(
-    from: Position,
-    to: Position,
-    board: Map[Position, Piece]
-  ): Boolean = {
-    val isTakingOwnPiece = board.get(to).map(_.color).contains(color)
-
-    from.diff(to) match {
-      case (0, y) => Math.abs(y) == 1 && !isTakingOwnPiece
-      case (x, 0) => Math.abs(x) == 1 && !isTakingOwnPiece
-      case (x, y) => Math.abs(x) == 1 && Math.abs(y) == 1 && !isTakingOwnPiece
+  override def isValidMoveV2(
+    move: Move,
+    board: Board
+  ): IsValid[Move] = {
+    val kingRule = {
+      Validated.condNec(
+        move.from.diff(move.to) match {
+          case (0, y) => Math.abs(y) == 1
+          case (x, 0) => Math.abs(x) == 1
+          case (x, y) => Math.abs(x) == 1 && Math.abs(y) == 1
+        },
+        move,
+        "King can't move more than 1 square position!"
+      )
     }
+
+    (kingRule, super.isValidMoveV2(move, board)).mapN((m, _) => m)
   }
 }
