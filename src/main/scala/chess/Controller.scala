@@ -22,14 +22,12 @@ object Controller {
   val ME = MonadError[AppOp, Error]
 
   def run(): AppOp[Unit] = {
-
     def recovery: Error => AppOp[Boolean] = { error: Error =>
       for {
         env <- readEnv
         _ <- env.console.printLines(error).toAppOp
       } yield false
     }
-    // TODO: the recovery is starting the game with new BoardState, it should remain the same
 
     setupGame >> ME.iterateUntil(ME.handleErrorWith(game())(recovery))(identity).void
   }
