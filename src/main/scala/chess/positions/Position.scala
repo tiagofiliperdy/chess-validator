@@ -1,5 +1,6 @@
 package chess.positions
 
+import cats.Eq
 import cats.implicits._
 import chess._
 import chess.app.Configuration.IsValid
@@ -40,4 +41,7 @@ object Position {
       (Position(fAndR._1, fAndR._2), Position(fAndR._3, fAndR._4)).mapN((p1, p2) => (p1, p2))
     }
   }
+
+  implicit def eqPosition(implicit eqInt: Eq[Int]): Eq[Position] =
+    Eq.instance((p1, p2) => p1.file === p2.file && p1.rank === p2.rank)
 }
