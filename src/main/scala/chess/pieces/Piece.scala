@@ -1,12 +1,14 @@
 package chess.pieces
 
+import cats.Eq
 import cats.data.Validated
 import cats.implicits._
 import chess.app.Configuration.IsValid
+import chess.app.Move
 import chess.board.Board
 import chess.positions.Directions.Direction
 import chess.positions.Position
-import chess.{File, Move, Rank}
+import chess.{File, Rank}
 
 trait Piece {
   val directions: Set[Direction]
@@ -93,4 +95,7 @@ object Piece {
       case (_, true) => ((from + 1) until to).toList
       case (_, _)    => ((to + 1) until from).toList.reverse
     }
+
+  implicit def eqPiece(implicit eqString: Eq[String]): Eq[Piece] =
+    Eq.instance((p1, p2) => p1.identifier === p2.identifier)
 }

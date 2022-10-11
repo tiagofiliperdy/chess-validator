@@ -3,10 +3,11 @@ package chess.board
 import cats._
 import cats.data.Validated
 import chess.app.Configuration.IsValid
+import chess.app.Move
 import chess.pieces._
 import chess.positions.Directions.Direction
 import chess.positions.{Directions, Position}
-import chess.{File, Move, Rank}
+import chess.{File, Rank}
 
 class Board private (val board: Map[Position, Piece]) {
   val horizontal: List[Char] = ('a' to 'h').toList

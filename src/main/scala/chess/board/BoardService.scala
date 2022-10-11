@@ -3,7 +3,7 @@ package chess.board
 import cats.Show
 import cats.data.State
 import cats.implicits._
-import chess.Move
+import chess.app.Move
 import chess.board.BoardService.{BoardOp, BoardState}
 import chess.pieces.Piece
 import chess.positions.Position

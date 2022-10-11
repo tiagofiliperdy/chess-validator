@@ -2,8 +2,8 @@ package chess.pieces
 
 import cats.data.Validated
 import cats.implicits._
-import chess.Move
 import chess.app.Configuration.IsValid
+import chess.app.Move
 import chess.board.Board
 import chess.positions.Directions.Direction
 import chess.positions.{Directions, Position}

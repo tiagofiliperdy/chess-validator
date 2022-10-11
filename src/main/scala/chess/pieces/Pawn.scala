@@ -6,7 +6,8 @@ import chess.app.Configuration.IsValid
 import chess.board.Board
 import chess.positions.Directions.Direction
 import chess.positions.Position
-import chess.{File, Move}
+import chess.File
+import chess.app.Move
 
 final case class Pawn(
   sourcePosition: Position,

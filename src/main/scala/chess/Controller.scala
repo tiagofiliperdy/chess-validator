@@ -4,6 +4,7 @@ import cats.MonadError
 import cats.data.Validated
 import cats.implicits._
 import chess.app.Configuration.{AppOp, Error, readEnv}
+import chess.app.Move
 import chess.app.Syntax._
 import chess.board.Board
 import chess.positions.Position

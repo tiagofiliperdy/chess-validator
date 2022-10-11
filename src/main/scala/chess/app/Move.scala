@@ -1,12 +1,13 @@
-package chess
+package chess.app
 
+import cats.Eq
 import cats.implicits._
 import chess.app.Configuration.IsValid
-import chess.positions.Position
-import board.Board
+import chess.board.Board
 import chess.pieces.Piece
+import chess.positions.Position
 
-case class Move private(
+case class Move private (
   val piece: Piece,
   val from: Position,
   val to: Position
@@ -32,4 +33,10 @@ object Move {
   ): IsValid[Move] =
     (isPositionInsideBoard(from), isPositionInsideBoard(to), isFromPositionAPiece(from, board))
       .mapN((f, t, piece) => new Move(piece, f, t))
+
+  implicit def eqMove(
+    implicit eqPiece: Eq[Piece],
+    eqPosition: Eq[Position]
+  ): Eq[Move] =
+    Eq.instance((m1, m2) => m1.piece === m2.piece && m1.from === m2.from && m1.to === m2.to)
 }
