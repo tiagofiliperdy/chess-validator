@@ -45,6 +45,12 @@ trait Generators {
     } yield Bishop(pos)
   }
 
+  implicit def arbQueen(implicit arbPos: Arbitrary[Position]): Arbitrary[Queen] = Arbitrary {
+    for {
+      pos <- arbPos.arbitrary
+    } yield Queen(pos)
+  }
+
   implicit def functionArb[A](implicit arbA: Arbitrary[A]): Arbitrary[A => A] =
     Arbitrary {
       arbA.arbitrary.map(a => (_: A) => a)

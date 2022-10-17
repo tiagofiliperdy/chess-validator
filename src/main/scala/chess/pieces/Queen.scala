@@ -25,7 +25,7 @@ final case class Queen(
         (fileDiff, rankDiff) match {
           case (0, y) if y != 0 => true
           case (x, 0) if x != 0 => true
-          case _ =>
+          case (x, y) if Math.abs(x) == Math.abs(y) =>
             directions.map(_.shift).contains(fileDiff / Math.abs(fileDiff), rankDiff / Math.abs(rankDiff))
         },
         move,
