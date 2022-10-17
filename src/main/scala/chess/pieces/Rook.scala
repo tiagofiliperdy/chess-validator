@@ -16,7 +16,7 @@ final case class Rook(
 
   override def differentiatePlayer: Piece = Rook(sourcePosition, identifier.toUpperCase)
 
-  override def isValidMoveV2(
+  override def isValidMove(
     move: Move,
     board: Board
   ): IsValid[Move] = {
@@ -31,6 +31,6 @@ final case class Rook(
         "Rook invalid move!"
       )
 
-    (rookRule, super.isValidMoveV2(move, board)).mapN((m, _) => m)
+    (rookRule, super.isValidMove(move, board)).mapN((m, _) => m)
   }
 }

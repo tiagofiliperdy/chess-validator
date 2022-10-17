@@ -54,7 +54,7 @@ object Controller {
   ): AppOp[Move] =
     for {
       move <- Move(board, input.from, input.to).toAppOp
-      _ <- move.piece.isValidMoveV2(move, board).toAppOp
+      _ <- move.piece.isValidMove(move, board).toAppOp
       kingInCheck <- Board.isKingInCheck(board, move).toAppOp
       _ <- if (kingInCheck) Validated.invalidNec("Move is invalid, you can't leave your king in check!").toAppOp
       else ().pure[AppOp]

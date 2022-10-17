@@ -26,7 +26,7 @@ trait Piece {
     * @param board
     * @return
     */
-  def isValidMoveV2(
+  def isValidMove(
     move: Move,
     board: Board
   ): IsValid[Move] =

@@ -20,7 +20,7 @@ final case class Pawn(
 
   override def differentiatePlayer: Piece = Pawn(sourcePosition, identifier.toUpperCase())
 
-  override def isValidMoveV2(
+  override def isValidMove(
     move: Move,
     board: Board
   ): IsValid[Move] = {
@@ -36,6 +36,6 @@ final case class Pawn(
         "Pawn invalid move!"
       )
 
-    (pawnRule, super.isValidMoveV2(move, board)).mapN((m, _) => m)
+    (pawnRule, super.isValidMove(move, board)).mapN((m, _) => m)
   }
 }

@@ -16,7 +16,7 @@ final case class King(
 
   override def differentiatePlayer: Piece = King(sourcePosition, identifier.toUpperCase())
 
-  override def isValidMoveV2(
+  override def isValidMove(
     move: Move,
     board: Board
   ): IsValid[Move] = {
@@ -32,6 +32,6 @@ final case class King(
       )
     }
 
-    (kingRule, super.isValidMoveV2(move, board)).mapN((m, _) => m)
+    (kingRule, super.isValidMove(move, board)).mapN((m, _) => m)
   }
 }

@@ -1,6 +1,5 @@
 package chess.pieces
 
-import cats.implicits.toShow
 import cats.kernel.laws.discipline.EqTests
 import chess.FpFinalSpec
 import chess.app.Move
@@ -24,9 +23,7 @@ class PieceSpec extends FpFinalSpec {
     forAll { (pawnMove: Move, piece: Piece) =>
       val currentBoard = Board.unsafeCreate(Map(pawnMove.from -> pawnMove.piece, pawnMove.to -> piece))
       assert(
-        Piece
-          .isNotTakingOwnPiece(pawnMove, currentBoard, pawnMove.piece.color)
-          .isInvalid
+        Piece.isNotTakingOwnPiece(pawnMove, currentBoard, pawnMove.piece.color).isInvalid
       )
     }
   }
@@ -65,19 +62,19 @@ class PieceSpec extends FpFinalSpec {
       } yield piece
     }
 
-      forAll { (piece: Piece) =>
-        val moveBasedOnPiece =
-          Move.unsafeCreate(
-            piece,
-            piece.sourcePosition,
-            Position.unsafeCreate(piece.sourcePosition.file + 2, piece.sourcePosition.rank)
-          )
-        val inBetweenPiece = Position.unsafeCreate(piece.sourcePosition.file + 1, piece.sourcePosition.rank)
-        val currentBoard =
-          Board.unsafeCreate(Map(piece.sourcePosition -> piece, inBetweenPiece -> piece))
+    forAll { (piece: Piece) =>
+      val moveBasedOnPiece =
+        Move.unsafeCreate(
+          piece,
+          piece.sourcePosition,
+          Position.unsafeCreate(piece.sourcePosition.file + 2, piece.sourcePosition.rank)
+        )
+      val inBetweenPiece = Position.unsafeCreate(piece.sourcePosition.file + 1, piece.sourcePosition.rank)
+      val currentBoard =
+        Board.unsafeCreate(Map(piece.sourcePosition -> piece, inBetweenPiece -> piece))
 
-        assert(Piece.isPathEmpty(moveBasedOnPiece, currentBoard).isInvalid)
-      }
+      assert(Piece.isPathEmpty(moveBasedOnPiece, currentBoard).isInvalid)
+    }
   }
 
   checkAll("Eq[Piece]", EqTests[Piece].eqv)

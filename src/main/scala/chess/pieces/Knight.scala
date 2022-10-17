@@ -17,7 +17,7 @@ final case class Knight(
 
   override def differentiatePlayer: Piece = Knight(sourcePosition, identifier.toUpperCase)
 
-  override def isValidMoveV2(
+  override def isValidMove(
     move: Move,
     board: Board
   ): IsValid[Move] = {
@@ -33,6 +33,6 @@ final case class Knight(
         "Knight has to move in an L shape!"
       )
 
-    (knightRule, super.isValidMoveV2(move, board)).mapN((m, _) => m)
+    (knightRule, super.isValidMove(move, board)).mapN((m, _) => m)
   }
 }

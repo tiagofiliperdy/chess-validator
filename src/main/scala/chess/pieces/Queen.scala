@@ -14,7 +14,7 @@ final case class Queen(
 ) extends Piece {
   override val directions: Set[Direction] = Directions.all
 
-  override def isValidMoveV2(
+  override def isValidMove(
     move: Move,
     board: Board
   ): IsValid[Move] = {
@@ -32,7 +32,7 @@ final case class Queen(
         "Queen invalid move!"
       )
 
-    (queenRule, super.isValidMoveV2(move, board)).mapN((m, _) => m)
+    (queenRule, super.isValidMove(move, board)).mapN((m, _) => m)
   }
 
   override def differentiatePlayer: Piece = Queen(sourcePosition, identifier.toUpperCase())

@@ -14,7 +14,7 @@ final case class Bishop(
 ) extends Piece {
   override val directions: Set[Direction] = Set(NE, SE, NW, SW)
 
-  override def isValidMoveV2(
+  override def isValidMove(
     move: Move,
     board: Board
   ): IsValid[Move] = {
@@ -28,7 +28,7 @@ final case class Bishop(
             "Move is not valid for a Bishop!"
           )
 
-        (bishopRule, super.isValidMoveV2(move, board)).mapN((m, _) => m)
+        (bishopRule, super.isValidMove(move, board)).mapN((m, _) => m)
       case _ =>
         Validated.invalidNec("Move does not obey to Bishop basic rules of moving diagonally!")
     }
