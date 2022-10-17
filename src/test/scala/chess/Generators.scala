@@ -39,6 +39,12 @@ trait Generators {
     } yield piece
   }
 
+  implicit def arbBishop(implicit arbPos: Arbitrary[Position]): Arbitrary[Bishop] = Arbitrary {
+    for {
+      pos <- arbPos.arbitrary
+    } yield Bishop(pos)
+  }
+
   implicit def functionArb[A](implicit arbA: Arbitrary[A]): Arbitrary[A => A] =
     Arbitrary {
       arbA.arbitrary.map(a => (_: A) => a)

@@ -20,7 +20,7 @@ final case class Bishop(
   ): IsValid[Move] = {
     val (fileDiff, rankDiff) = move.from.diff(move.to)
     (fileDiff, rankDiff) match {
-      case (x, y) if x != 0 && y != 0 =>
+      case (x, y) if Math.abs(x) == Math.abs(y) =>
         val bishopRule =
           Validated.condNec(
             directions.map(_.shift).contains((fileDiff / Math.abs(fileDiff), rankDiff / Math.abs(rankDiff))),

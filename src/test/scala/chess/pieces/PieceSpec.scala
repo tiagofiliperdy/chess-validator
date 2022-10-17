@@ -56,8 +56,7 @@ class PieceSpec extends FpFinalSpec {
         pos1 <- arbPos.arbitrary
         pos2 <- arbPos.arbitrary
         pos3 <- arbPos.arbitrary
-        pos4 <- arbPos.arbitrary
-        pieces = List(Bishop(pos2), Queen(pos3), Rook(pos4))
+        pieces = List(Bishop(pos1), Queen(pos2), Rook(pos3))
         piece <- Gen.oneOf(pieces)
       } yield piece
     }
