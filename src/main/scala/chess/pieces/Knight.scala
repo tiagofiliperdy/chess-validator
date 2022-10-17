@@ -33,6 +33,6 @@ final case class Knight(
         "Knight has to move in an L shape!"
       )
 
-    (knightRule, super.isValidMove(move, board)).mapN((m, _) => m)
+    (knightRule, Piece.isNotTakingOwnPiece(move, board, color)).mapN((m, _) => m)
   }
 }

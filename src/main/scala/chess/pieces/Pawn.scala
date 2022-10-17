@@ -36,6 +36,6 @@ final case class Pawn(
         "Pawn invalid move!"
       )
 
-    (pawnRule, super.isValidMove(move, board)).mapN((m, _) => m)
+    (pawnRule, Piece.isNotTakingOwnPiece(move, board, color)).mapN((m, _) => m)
   }
 }

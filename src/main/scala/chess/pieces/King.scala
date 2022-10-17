@@ -32,6 +32,6 @@ final case class King(
       )
     }
 
-    (kingRule, super.isValidMove(move, board)).mapN((m, _) => m)
+    (kingRule, Piece.isNotTakingOwnPiece(move, board, color)).mapN((m, _) => m)
   }
 }
