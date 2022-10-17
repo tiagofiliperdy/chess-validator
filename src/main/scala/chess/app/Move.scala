@@ -31,8 +31,12 @@ object Move {
     from: Position,
     to: Position
   ): IsValid[Move] =
-    (isPositionInsideBoard(from), isPositionInsideBoard(to), isFromPositionAPiece(from, board))
-      .mapN((f, t, piece) => new Move(piece, f, t))
+    (
+      isPositionInsideBoard(from),
+      isPositionInsideBoard(to),
+      isFromPositionAPiece(from, board),
+      isFromPositionDifferentThanTo(from, to)
+    ).mapN((f, t, piece, _) => new Move(piece, f, t))
 
   implicit def eqMove(
     implicit eqPiece: Eq[Piece],

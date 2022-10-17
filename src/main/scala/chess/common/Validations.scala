@@ -1,6 +1,7 @@
 package chess.common
 
 import cats.data._
+import cats.implicits.catsSyntaxEq
 import chess.{File, Rank}
 import chess.app.Configuration.IsValid
 import chess.board.Board
@@ -49,6 +50,13 @@ object Validations {
       board.getPiece(pos).isDefined,
       board.board(pos),
       "Position is not valid, it does not contain any piece!"
+    )
+
+  def isFromPositionDifferentThanTo(fromPos: Position, toPos: Position): IsValid[Unit] =
+    Validated.condNec(
+      fromPos =!= toPos,
+      (),
+      "From and To positions need to be different!"
     )
 
 }

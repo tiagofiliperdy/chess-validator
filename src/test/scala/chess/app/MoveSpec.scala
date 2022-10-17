@@ -2,6 +2,7 @@ package chess.app
 
 import cats.data.Validated.Valid
 import cats.implicits._
+import cats.kernel.laws.discipline.EqTests
 import chess.FpFinalSpec
 import chess.board.Board
 import chess.pieces.{Pawn, Piece}
@@ -35,4 +36,6 @@ class MoveSpec extends FpFinalSpec {
       assert(Move(Board.unsafeCreate(oneBoardPiece), posFrom, posTo).isInvalid)
     }
   }
+
+  checkAll("Eq[Move]", EqTests[Move].eqv)
 }

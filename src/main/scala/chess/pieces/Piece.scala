@@ -67,8 +67,8 @@ object Piece {
             .zip(ranksToCheck)
             .traverse(pos => Position(pos._1, pos._2).map(p => !board.board.contains(p)))
             .map(_.forall(identity)) match {
-            case Validated.Valid(_)   => true
-            case Validated.Invalid(_) => false
+            case Validated.Valid(value) => value
+            case Validated.Invalid(_)   => false
           }
         case _ => true
       },
