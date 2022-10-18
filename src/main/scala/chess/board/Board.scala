@@ -121,7 +121,7 @@ object Board {
     * @param color
     * @return
     */
-  def nearestPositionWithPiece(
+  private def nearestPositionWithPiece(
     board: Map[Position, Piece],
     dir: Direction,
     file: File,
@@ -163,4 +163,6 @@ object Board {
          |
          |""".stripMargin
     }
+
+  implicit def eqBoard(implicit eqMap: Eq[Map[Position, Piece]]): Eq[Board] = Eq.by(_.board)
 }

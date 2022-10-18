@@ -24,8 +24,12 @@ trait Generators {
   implicit val pawnMoveArb: Arbitrary[Move] = Arbitrary {
     for {
       fromPos <- positionArb.arbitrary
-      toPos <- positionArb.arbitrary if (toPos != fromPos)
+      toPos <- positionArb.arbitrary if toPos != fromPos
     } yield Move.unsafeCreate(Pawn(fromPos), fromPos, toPos)
+  }
+
+  implicit def boardArb(implicit pieceArb: Arbitrary[Piece]): Arbitrary[Board] = Arbitrary {
+    Gen.mapOf[Position, Piece](pieceArb.arbitrary.map(p => (p.sourcePosition, p))).map(Board.unsafeCreate)
   }
 
   implicit def arbPiece(implicit arbPos: Arbitrary[Position]): Arbitrary[Piece] = Arbitrary {
