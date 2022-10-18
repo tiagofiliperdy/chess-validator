@@ -51,6 +51,12 @@ trait Generators {
     } yield Queen(pos)
   }
 
+  implicit def arbRook(implicit arbPos: Arbitrary[Position]): Arbitrary[Rook] = Arbitrary {
+    for {
+      pos <- arbPos.arbitrary
+    } yield Rook(pos)
+  }
+
   implicit def functionArb[A](implicit arbA: Arbitrary[A]): Arbitrary[A => A] =
     Arbitrary {
       arbA.arbitrary.map(a => (_: A) => a)
