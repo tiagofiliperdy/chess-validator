@@ -16,7 +16,7 @@ class RookSpec extends FpFinalSpec {
     } yield Position.unsafeCreate(file, rank)
   }
 
-  val queenMoves =
+  val rookMoves =
     Table(
       ("move", "isValid"),
       (rightMove, true),
@@ -38,7 +38,7 @@ class RookSpec extends FpFinalSpec {
 
   test("validates rook moves") {
     forAll { rook: Rook =>
-      forAll(queenMoves) { (move: Rook => Move, isValid: Boolean) =>
+      forAll(rookMoves) { (move: Rook => Move, isValid: Boolean) =>
         val onePieceBoard = Board.unsafeCreate(Map(rook.sourcePosition -> rook))
 
         assert(rook.isValidMove(move(rook), onePieceBoard).isValid == isValid)

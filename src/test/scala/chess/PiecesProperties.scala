@@ -68,5 +68,39 @@ trait PiecesProperties {
       piece.sourcePosition,
       Position.unsafeCreate(piece.sourcePosition.file - 1, piece.sourcePosition.rank - 2)
     )
+  val oneRightMove = (piece: Piece) =>
+    Move.unsafeCreate(
+      piece,
+      piece.sourcePosition,
+      Position.unsafeCreate(piece.sourcePosition.file + 1, piece.sourcePosition.rank)
+    )
+
+  val oneLeftMove = (piece: Piece) =>
+    Move.unsafeCreate(
+      piece,
+      piece.sourcePosition,
+      Position.unsafeCreate(piece.sourcePosition.file - 1, piece.sourcePosition.rank)
+    )
+
+  val oneUpwards = (piece: Piece) =>
+    Move.unsafeCreate(
+      piece,
+      piece.sourcePosition,
+      Position.unsafeCreate(piece.sourcePosition.file, piece.sourcePosition.rank + 1)
+    )
+
+  val oneDownwards = (piece: Piece) =>
+    Move.unsafeCreate(
+      piece,
+      piece.sourcePosition,
+      Position.unsafeCreate(piece.sourcePosition.file, piece.sourcePosition.rank - 1)
+    )
+
+  val oneDiagonalPositiveMove = (piece: Piece) =>
+    Move.unsafeCreate(
+      piece,
+      piece.sourcePosition,
+      Position.unsafeCreate(piece.sourcePosition.file + 1, piece.sourcePosition.rank + 1)
+    )
 
 }
