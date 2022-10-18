@@ -2,7 +2,7 @@ package chess
 
 import chess.app.Move
 import chess.board.Board
-import chess.pieces.{Bishop, King, Pawn, Piece, Queen, Rook}
+import chess.pieces.{Bishop, King, Knight, Pawn, Piece, Queen, Rook}
 import chess.positions.Position
 import org.scalacheck.{Arbitrary, Gen}
 
@@ -67,6 +67,12 @@ trait Generators {
     for {
       pos <- arbPos.arbitrary
     } yield Pawn(pos)
+  }
+
+  implicit def arbKnight(implicit arbPos: Arbitrary[Position]): Arbitrary[Knight] = Arbitrary {
+    for {
+      pos <- arbPos.arbitrary
+    } yield Knight(pos)
   }
 
   implicit def functionArb[A](implicit arbA: Arbitrary[A]): Arbitrary[A => A] =
