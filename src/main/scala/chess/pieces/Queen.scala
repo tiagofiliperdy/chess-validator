@@ -27,6 +27,7 @@ final case class Queen(
           case (x, 0) if x != 0 => true
           case (x, y) if Math.abs(x) == Math.abs(y) =>
             directions.map(_.shift).contains(fileDiff / Math.abs(fileDiff), rankDiff / Math.abs(rankDiff))
+          case _ => false
         },
         move,
         "Queen invalid move!"

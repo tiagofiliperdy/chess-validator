@@ -52,7 +52,7 @@ trait PiecesProperties {
     Move.unsafeCreate(
       piece,
       piece.sourcePosition,
-      Position.unsafeCreate(piece.sourcePosition.file, piece.sourcePosition.rank + 2)
+      Position.unsafeCreate(piece.sourcePosition.file + 1, piece.sourcePosition.rank + 2)
     )
 
   val unorthodoxMove2 = (piece: Piece) =>

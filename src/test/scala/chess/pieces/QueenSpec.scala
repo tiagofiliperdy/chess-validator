@@ -35,7 +35,7 @@ class QueenSpec extends FpFinalSpec {
       queen.differentiatePlayer =!= queen
     }
   }
-  //TODO: row 6 is failing
+
   test("validates queen moves") {
     forAll { queen: Queen =>
       forAll(queenMoves) { (move: Queen => Move, isValid: Boolean) =>
