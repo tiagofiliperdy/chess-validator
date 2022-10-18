@@ -30,13 +30,13 @@ class RookSpec extends FpFinalSpec {
       (unorthodoxMove3, false)
     )
 
-  test("queen can change its identifier") {
+  test("rook can change its identifier") {
     forAll { rook: Rook =>
       rook.differentiatePlayer =!= rook
     }
   }
 
-  test("validates queen moves") {
+  test("validates rook moves") {
     forAll { rook: Rook =>
       forAll(queenMoves) { (move: Rook => Move, isValid: Boolean) =>
         val onePieceBoard = Board.unsafeCreate(Map(rook.sourcePosition -> rook))
