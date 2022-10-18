@@ -11,11 +11,10 @@ class PieceSpec extends FpFinalSpec {
 
   test("validates if piece is not taking own piece") {
     forAll { (pawnMove: Move) =>
-      assert(
-        Piece
-          .isNotTakingOwnPiece(pawnMove, Board.unsafeCreate(Map(pawnMove.from -> pawnMove.piece)), pawnMove.piece.color)
-          .isValid
-      )
+      val board =
+        Board.unsafeCreate(Map(pawnMove.from -> pawnMove.piece, pawnMove.to -> pawnMove.piece.differentiatePlayer))
+
+      assert(Piece.isNotTakingOwnPiece(pawnMove, board, pawnMove.piece.color).isValid)
     }
   }
 
