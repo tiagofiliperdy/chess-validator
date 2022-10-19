@@ -37,7 +37,7 @@ object Controller {
       env <- readEnv
       _ <- env.console.printLine(">>> Game Begins!").toAppOp
       state <- env.gameService.currentState.toAppOp
-      _ <- env.console.printLine(state.show).toAppOp
+      _ <- env.console.printLine(state.board.show).toAppOp
     } yield ()
 
   def readPlay: AppOp[UserInputPlay] =

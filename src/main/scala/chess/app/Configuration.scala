@@ -2,8 +2,8 @@ package chess.app
 
 import cats.data._
 import cats.effect.IO
-import chess.board.GameService.GameState
-import chess.board.{GameService, LiveGameService}
+import chess.service.GameService.GameState
+import chess.service.{GameService, LiveGameService}
 
 object Configuration {
   type Error = NonEmptyChain[String]

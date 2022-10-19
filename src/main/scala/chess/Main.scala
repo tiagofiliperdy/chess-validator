@@ -2,7 +2,7 @@ package chess
 
 import cats.effect.unsafe.implicits.global
 import chess.app.Configuration.liveEnv
-import chess.board.GameService.GameState
+import chess.service.GameService.GameState
 
 object Main extends App {
 

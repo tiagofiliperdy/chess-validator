@@ -103,7 +103,7 @@ object Board {
           } ++ knights.map(_._1)
 
         nearestPosPieces.exists { pos =>
-          Move(board, pos, kingPos, currentPlayer.opponent)
+          Move(board, pos, kingPos, currentPlayer.getOpponent)
             .andThen(move => board.board(move.from).isValidMove(move, board)) match {
             case Validated.Valid(_)   => true
             case Validated.Invalid(_) => false

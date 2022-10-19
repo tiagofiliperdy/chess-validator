@@ -1,13 +1,14 @@
-package chess.board
+package chess.service
 
 import cats.Show
 import cats.data.State
 import cats.implicits._
 import chess.app.Player.{P1, P2}
 import chess.app.{Move, Player}
-import chess.board.GameService.{GameOp, GameState}
+import chess.board.Board
 import chess.pieces.Piece
 import chess.positions.Position
+import chess.service.GameService.{GameOp, GameState}
 
 trait GameService {
   import GameService._
