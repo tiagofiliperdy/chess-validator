@@ -4,16 +4,15 @@ import cats.MonadError
 import cats.data.Validated
 import cats.implicits._
 import chess.app.Configuration.{AppOp, Error, readEnv}
+import chess.app.Console.{Error => ConsoleError}
 import chess.app.Move
 import chess.app.Syntax._
 import chess.board.Board
 import chess.positions.Position
 
-//TODO: Game is not 100% working, because of:
-//  - There is no logic to evaluate check-mate
-//  - Since there is no check-mate can't say a game is over, so code runs forever.
-//  To change the above logic for check-mate needs to be implemented, at the end of each round
-//  validate it, if it's check-mate then break the loop.
+//  TODO: Game is not 100% working, because of:
+//    - There is no logic to evaluate check-mate, so code runs forever.
+
 object Controller {
   case class UserInputPlay(
     from: Position,
@@ -37,46 +36,67 @@ object Controller {
     for {
       env <- readEnv
       _ <- env.console.printLine(">>> Game Begins!").toAppOp
-      state <- env.boardService.currentState.toAppOp
+      state <- env.gameService.currentState.toAppOp
       _ <- env.console.printLine(state.show).toAppOp
     } yield ()
 
   def readPlay: AppOp[UserInputPlay] =
     for {
       env <- readEnv
-      line <- env.console.readLine(">>> Player 1 play:").toAppOp
+      state <- env.gameService.currentState.toAppOp
+      line <- env.console.readLine(s">>> ${state.player.denomination} play:").toAppOp
       positions <- Position(line).toAppOp
     } yield UserInputPlay(positions._1, positions._2)
 
-  def validatePlay(
-    input: UserInputPlay,
-    board: Board
-  ): AppOp[Move] =
+  def validatePlay(input: UserInputPlay): AppOp[Move] =
     for {
-      move <- Move(board, input.from, input.to).toAppOp
-      _ <- move.piece.isValidMove(move, board).toAppOp
-      kingInCheck <- Board.isKingInCheck(board, move).toAppOp
+      env <- readEnv
+      state <- env.gameService.currentState.toAppOp
+      move <- Move(state.board, input.from, input.to, state.player).toAppOp
+      _ <- move.piece.isValidMove(move, state.board).toAppOp
+      _ <- isKingInCheck
+    } yield move
+
+  def isKingInCheck: AppOp[Unit] =
+    for {
+      env <- readEnv
+      state <- env.gameService.currentState.toAppOp
+      kingInCheck <- Board.isKingInCheck(state.board, state.player).toAppOp
       _ <- if (kingInCheck) Validated.invalidNec("Move is invalid, you can't leave your king in check!").toAppOp
       else ().pure[AppOp]
-    } yield move
+    } yield ()
+
+  def informIsKingInCheck(): AppOp[Unit] =
+    for {
+      env <- readEnv
+      state <- env.gameService.currentState.toAppOp
+      kingInCheck <- Board.isKingInCheck(state.board, state.player).toAppOp
+      _ <- if (kingInCheck) env.console.printLine("Your King is in check, play wise!", ConsoleError).toAppOp
+      else ().pure[AppOp]
+    } yield ()
 
   def updateBoard(move: Move): AppOp[Unit] =
     for {
       env <- readEnv
-      newBoard <- env.boardService.updateBoard(move).toAppOp
+      newBoard <- env.gameService.updateBoard(move).toAppOp
       _ <- env.console.printLine(newBoard.show).toAppOp
     } yield ()
 
   def game(): AppOp[Boolean] =
     for {
-      env <- readEnv
+      _ <- informIsKingInCheck()
       userInput <- readPlay
-      boardState <- env.boardService.currentState.toAppOp
-      move <- validatePlay(userInput, boardState.board)
+      move <- validatePlay(userInput)
       _ <- updateBoard(move)
-      weHaveWinner <- isGameFinished()
+      weHaveWinner <- isGameFinished
     } yield weHaveWinner
 
-  // simulates the check-mate logic
-  def isGameFinished(): AppOp[Boolean] = Validated.valid(false).toAppOp
+  def isGameFinished: AppOp[Boolean] = {
+    for {
+      env <- readEnv
+      _ <- env.gameService.switchTurns().toAppOp
+      // simulates the check-mate logic
+      res <- Validated.valid(false).toAppOp
+    } yield res
+  }
 }

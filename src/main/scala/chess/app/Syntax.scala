@@ -4,7 +4,7 @@ import cats.data.{EitherT, NonEmptyChain, ReaderT, StateT}
 import cats.effect.IO
 import cats.implicits._
 import chess.app.Configuration.{AppOp, ErrorOr, IsValid, St}
-import chess.board.BoardService.BoardOp
+import chess.board.GameService.GameOp
 
 object Syntax {
 
@@ -37,7 +37,7 @@ object Syntax {
     * board state with it so the changes are reflected.
     *
     */
-  implicit class BoardOpOps[A](boardOp: BoardOp[A]) {
+  implicit class BoardOpOps[A](boardOp: GameOp[A]) {
 
     def toAppOp: AppOp[A] = {
       val st: St[A] = StateT { appState =>

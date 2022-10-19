@@ -5,6 +5,7 @@ import cats.implicits._
 import cats.kernel.laws.discipline.EqTests
 import chess.FpFinalSpec
 import chess.app.Move
+import chess.app.Player.P2
 import chess.pieces.{King, Piece, Queen}
 import chess.positions.Position
 import org.scalacheck.{Arbitrary, Gen}
@@ -39,34 +40,29 @@ class BoardSpec extends FpFinalSpec {
     }
 
     forAll(customKingArb.arbitrary) { (king: King) =>
-      val playingPiece = Queen(Position.unsafeCreate(king.sourcePosition.file + 2, king.sourcePosition.rank + 2))
-      val menacePiece =
+      val sameColorPiece = Queen(Position.unsafeCreate(king.sourcePosition.file + 2, king.sourcePosition.rank + 2))
+      val differentColorPiece =
         Queen(Position.unsafeCreate(king.sourcePosition.file + 3, king.sourcePosition.rank + 3)).differentiatePlayer
-      val board =
+      val nonCheckBoard =
         Board.unsafeCreate(
           Map(
             king.sourcePosition -> king,
-            playingPiece.sourcePosition -> playingPiece,
-            menacePiece.sourcePosition -> menacePiece
+            sameColorPiece.sourcePosition -> sameColorPiece,
+            differentColorPiece.sourcePosition -> differentColorPiece
           )
         )
-      val nonCheckMove =
-        Move.unsafeCreate(
-          playingPiece,
-          playingPiece.sourcePosition,
-          Position.unsafeCreate(playingPiece.sourcePosition.file - 1, playingPiece.sourcePosition.rank - 1)
+
+      assert(Board.isKingInCheck(nonCheckBoard, P2) eqv Valid(false))
+
+      val checkBoard =
+        Board.unsafeCreate(
+          Map(
+            king.sourcePosition -> king,
+            differentColorPiece.sourcePosition -> differentColorPiece
+          )
         )
 
-      assert(Board.isKingInCheck(board, nonCheckMove) eqv Valid(false))
-
-      val checkMove =
-        Move.unsafeCreate(
-          playingPiece,
-          playingPiece.sourcePosition,
-          Position.unsafeCreate(playingPiece.sourcePosition.file, playingPiece.sourcePosition.rank - 1)
-        )
-
-      assert(Board.isKingInCheck(board, checkMove) eqv Valid(true))
+      assert(Board.isKingInCheck(checkBoard, P2) eqv Valid(true))
     }
   }
 

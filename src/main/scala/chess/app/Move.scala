@@ -29,14 +29,16 @@ object Move {
   def apply(
     board: Board,
     from: Position,
-    to: Position
+    to: Position,
+    currentPlayer: Player
   ): IsValid[Move] =
     (
       isPositionInsideBoard(from),
       isPositionInsideBoard(to),
       isFromPositionAPiece(from, board),
-      isFromPositionDifferentThanTo(from, to)
-    ).mapN((f, t, piece, _) => new Move(piece, f, t))
+      isFromPositionDifferentThanTo(from, to),
+      fromPositionContainsPieceOfPlayerColor(from, board, currentPlayer)
+    ).mapN((f, t, piece, _, _) => new Move(piece, f, t))
 
   implicit def eqMove(
     implicit eqPiece: Eq[Piece],

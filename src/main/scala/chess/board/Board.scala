@@ -3,7 +3,8 @@ package chess.board
 import cats._
 import cats.data.Validated
 import chess.app.Configuration.IsValid
-import chess.app.Move
+import chess.app.{Move, Player}
+import chess.common.Color
 import chess.pieces._
 import chess.positions.Directions.Direction
 import chess.positions.{Directions, Position}
@@ -76,14 +77,14 @@ object Board {
 
   def isKingInCheck(
     board: Board,
-    move: Move
+    currentPlayer: Player
   ): IsValid[Boolean] = {
     val king: Option[(Position, Piece)] = board.board.find {
-      case (_, k @ King(_, _)) => k.color.equals(move.piece.color)
+      case (_, k @ King(_, _)) => k.color.equals(currentPlayer.color)
       case _                   => false
     }
     val knights: Set[(Position, Piece)] = board.board.filter {
-      case (_, n @ Knight(_, _)) => !n.color.equals(move.piece.color)
+      case (_, n @ Knight(_, _)) => !n.color.equals(currentPlayer.color)
       case _                     => false
     }.toSet
 
@@ -97,12 +98,13 @@ object Board {
               dir,
               kingPos.file + dir.shift._1,
               kingPos.rank + dir.shift._2,
-              move.piece.color
+              currentPlayer.color
             ).toOption
           } ++ knights.map(_._1)
 
         nearestPosPieces.exists { pos =>
-          Move(board, pos, kingPos).andThen(move => board.board(move.from).isValidMove(move, board)) match {
+          Move(board, pos, kingPos, currentPlayer.opponent)
+            .andThen(move => board.board(move.from).isValidMove(move, board)) match {
             case Validated.Valid(_)   => true
             case Validated.Invalid(_) => false
           }

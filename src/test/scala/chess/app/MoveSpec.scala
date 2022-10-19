@@ -4,6 +4,7 @@ import cats.data.Validated.Valid
 import cats.implicits._
 import cats.kernel.laws.discipline.EqTests
 import chess.FpFinalSpec
+import chess.app.Player.P2
 import chess.board.Board
 import chess.pieces.{Pawn, Piece}
 import chess.positions.Position
@@ -16,14 +17,14 @@ class MoveSpec extends FpFinalSpec {
       val piece = Pawn(posFrom)
       val onePieceBoard = Board.unsafeCreate(Map(posFrom -> piece))
 
-      assert(Move(onePieceBoard, posFrom, posTo) eqv Valid(Move.unsafeCreate(piece, posFrom, posTo)))
+      assert(Move(onePieceBoard, posFrom, posTo, P2) eqv Valid(Move.unsafeCreate(piece, posFrom, posTo)))
     }
   }
 
   test("create an invalid move due to the board not having 'From Position'") {
     forAll { (posFrom: Position, posTo: Position) =>
       val emptyBoard = Map.empty[Position, Piece]
-      assert(Move(Board.unsafeCreate(emptyBoard), posFrom, posTo).isInvalid)
+      assert(Move(Board.unsafeCreate(emptyBoard), posFrom, posTo, P2).isInvalid)
     }
   }
 
@@ -33,7 +34,7 @@ class MoveSpec extends FpFinalSpec {
     forAll { (posFrom: Position, fileTo: Int, rankTo: Int) =>
       val oneBoardPiece = Map(posFrom -> Pawn(posFrom))
       val posTo = Position.unsafeCreate(fileTo, rankTo)
-      assert(Move(Board.unsafeCreate(oneBoardPiece), posFrom, posTo).isInvalid)
+      assert(Move(Board.unsafeCreate(oneBoardPiece), posFrom, posTo, P2).isInvalid)
     }
   }
 

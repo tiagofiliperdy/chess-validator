@@ -4,6 +4,7 @@ import cats.data._
 import cats.implicits.catsSyntaxEq
 import chess.{File, Rank}
 import chess.app.Configuration.IsValid
+import chess.app.Player
 import chess.board.Board
 import chess.board.Board.dimension
 import chess.pieces.Piece
@@ -45,18 +46,35 @@ object Validations {
       "Position is not valid, it is out of board bounds!"
     )
 
-  def isFromPositionAPiece(pos: Position, board: Board): IsValid[Piece] =
+  def isFromPositionAPiece(
+    pos: Position,
+    board: Board
+  ): IsValid[Piece] =
     Validated.condNec(
       board.getPiece(pos).isDefined,
       board.board(pos),
       "Position is not valid, it does not contain any piece!"
     )
 
-  def isFromPositionDifferentThanTo(fromPos: Position, toPos: Position): IsValid[Unit] =
+  def isFromPositionDifferentThanTo(
+    fromPos: Position,
+    toPos: Position
+  ): IsValid[Unit] =
     Validated.condNec(
       fromPos =!= toPos,
       (),
       "From and To positions need to be different!"
+    )
+
+  def fromPositionContainsPieceOfPlayerColor(
+    fromPos: Position,
+    board: Board,
+    currentPlayer: Player
+  ): IsValid[Unit] =
+    Validated.condNec(
+      board.board.get(fromPos).exists(_.color == currentPlayer.color),
+      (),
+      s"From position needs to contain a piece of ${currentPlayer.denomination}!"
     )
 
 }

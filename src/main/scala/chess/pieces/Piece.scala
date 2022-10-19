@@ -6,6 +6,7 @@ import cats.implicits._
 import chess.app.Configuration.IsValid
 import chess.app.Move
 import chess.board.Board
+import chess.common.{Black, Color, White}
 import chess.positions.Directions.Direction
 import chess.positions.Position
 import chess.{File, Rank}
@@ -17,7 +18,6 @@ trait Piece {
   def identifier: String
   def differentiatePlayer: Piece
   def color: Color = if (identifier.charAt(0).isUpper) White else Black
-  def opponentColor: Color = if (identifier.charAt(0).isUpper) Black else White
 
   /**
     * Validates moves between two positions, excluding start and end, when distance is greater than one.
