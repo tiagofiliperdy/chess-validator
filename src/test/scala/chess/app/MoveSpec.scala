@@ -4,7 +4,7 @@ import cats.data.Validated.Valid
 import cats.implicits._
 import cats.kernel.laws.discipline.EqTests
 import chess.FpFinalSpec
-import chess.app.Player.P2
+import chess.app.Player.{P1, P2}
 import chess.board.Board
 import chess.pieces.{Pawn, Piece}
 import chess.positions.Position
@@ -25,6 +25,14 @@ class MoveSpec extends FpFinalSpec {
     forAll { (posFrom: Position, posTo: Position) =>
       val emptyBoard = Map.empty[Position, Piece]
       assert(Move(Board.unsafeCreate(emptyBoard), posFrom, posTo, P2).isInvalid)
+    }
+  }
+
+  test("create an invalid move due to the 'From Position' not having piece of same color") {
+    forAll { (posFrom: Position, posTo: Position) =>
+      val piece = Pawn(posFrom)
+      val onePieceBoard = Board.unsafeCreate(Map(posFrom -> piece))
+      assert(Move(Board.unsafeCreate(onePieceBoard.board), posFrom, posTo, P1).isInvalid)
     }
   }
 
