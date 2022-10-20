@@ -1,12 +1,21 @@
 package chess
 
-import chess.app.Move
+import cats.data.{NonEmptyChain, State, Validated, ValidatedNec}
+import cats.effect.IO
+import cats.implicits._
+import chess.app.Configuration.IsValid
+import chess.app.Player.{P1, P2}
+import chess.app.{Move, Player}
 import chess.board.Board
 import chess.pieces.{Bishop, King, Knight, Pawn, Piece, Queen, Rook}
 import chess.positions.Position
+import chess.service.GameService.{GameOp, GameState}
 import org.scalacheck.{Arbitrary, Gen}
 
 trait Generators {
+
+  implicit def ioArb[A](implicit aArb: Arbitrary[A]): Arbitrary[IO[A]] =
+    Arbitrary(aArb.arbitrary.map(IO(_)))
 
   /**
     * Only creates valid Position even though file and rank are not validated
@@ -27,6 +36,8 @@ trait Generators {
       toPos <- positionArb.arbitrary if toPos != fromPos
     } yield Move.unsafeCreate(Pawn(fromPos), fromPos, toPos)
   }
+
+  implicit val arbPlayer: Arbitrary[Player] = Arbitrary(Gen.oneOf(P1, P2))
 
   implicit def boardArb(implicit pieceArb: Arbitrary[Piece]): Arbitrary[Board] = Arbitrary {
     Gen.mapOf[Position, Piece](pieceArb.arbitrary.map(p => (p.sourcePosition, p))).map(Board.unsafeCreate)
@@ -83,5 +94,25 @@ trait Generators {
     Arbitrary {
       arbA.arbitrary.map(a => (_: A) => a)
     }
+
+  implicit def isValidArb[A](implicit arbA: Arbitrary[A]): Arbitrary[IsValid[A]] = {
+    val validGen: Gen[IsValid[A]] = arbA.arbitrary.map(_.validNec[String])
+    val invalidGen: Gen[IsValid[A]] =
+      Gen.nonEmptyListOf(Arbitrary.arbitrary[String]).map(xs => NonEmptyChain.fromSeq(xs).get.invalid[A])
+
+    Arbitrary(Gen.oneOf(validGen, invalidGen))
+  }
+
+  implicit def gameOpArb[A](
+    implicit arbA: Arbitrary[A],
+    arbBoard: Arbitrary[Board],
+    arbPlayer: Arbitrary[Player]
+  ): Arbitrary[GameOp[A]] = Arbitrary {
+    for {
+      a <- arbA.arbitrary
+      board <- arbBoard.arbitrary
+      player <- arbPlayer.arbitrary
+    } yield State((_: GameState) => (GameState(board, List(board.board), player), a))
+  }
 
 }
