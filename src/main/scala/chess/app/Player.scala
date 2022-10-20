@@ -1,6 +1,8 @@
 package chess.app
 
-import chess.common.{Black, Color, White}
+import cats.Eq
+import chess.common.Color.{Black, White}
+import chess.common.Color
 
 sealed abstract class Player(
   val color: Color,
@@ -14,4 +16,6 @@ object Player {
   case object P2 extends Player(Black, "Player 2") {
     override def getOpponent: Player = P1
   }
+
+  implicit def eqPlayer(implicit eqColor: Eq[Color]): Eq[Player] = Eq.by(_.color)
 }

@@ -1,6 +1,6 @@
 package chess.service
 
-import cats.Show
+import cats.{Eq, Show}
 import cats.data.State
 import cats.implicits._
 import chess.app.Player.{P1, P2}
@@ -43,7 +43,7 @@ object GameService {
     }
 
     def switchTurns: (GameState, Player) = {
-      val nextPlayer = if(player == P1) P2 else P1
+      val nextPlayer = if (player == P1) P2 else P1
       (copy(player = nextPlayer), nextPlayer)
     }
   }
@@ -52,6 +52,13 @@ object GameService {
     def beginning: GameState = GameState(Board.unsafeCreateGameBeginning, Nil, P1)
 
     implicit val boardStateShow: Show[GameState] = Show.show(bs => bs.board.show)
+
+    implicit def eqGameState(
+      implicit eqBoard: Eq[Board],
+      eqListMap: Eq[List[Map[Position, Piece]]],
+      eqPlayer: Eq[Player]
+    ): Eq[GameState] =
+      Eq.instance((gs1, gs2) => gs1.board === gs2.board && gs1.history === gs2.history && gs1.player === gs2.player)
   }
 }
 

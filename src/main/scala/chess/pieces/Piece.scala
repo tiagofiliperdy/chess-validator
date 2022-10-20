@@ -6,7 +6,8 @@ import cats.implicits._
 import chess.app.Configuration.IsValid
 import chess.app.Move
 import chess.board.Board
-import chess.common.{Black, Color, White}
+import chess.common.Color.{Black, White}
+import chess.common.Color
 import chess.positions.Directions.Direction
 import chess.positions.Position
 import chess.{File, Rank}
