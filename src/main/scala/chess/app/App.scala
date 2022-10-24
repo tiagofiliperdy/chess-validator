@@ -8,6 +8,7 @@ import chess.app.Syntax._
 import chess.board.Board
 import chess.positions.Position
 import chess.app.Console.{Error => ConsoleError}
+import chess.common.Validations
 
 object App {
   case class UserInputPlay(
@@ -22,7 +23,10 @@ object App {
       for {
         env <- readEnv
         _ <- env.console.printLines(error).toAppOp
-      } yield false
+      } yield {
+        if (error.contains("End Game!")) true
+        else false
+      }
     }
 
     setupGame >> ME.iterateUntil(ME.handleErrorWith(game())(recovery))(identity).void
@@ -32,6 +36,7 @@ object App {
     for {
       env <- readEnv
       _ <- env.console.printLine(">>> Game Begins!").toAppOp
+      _ <- env.console.printLine(">>> Write END to exit the app at any moment.").toAppOp
       state <- env.gameService.currentState.toAppOp
       _ <- env.console.printLine(state.board.show).toAppOp
     } yield ()
@@ -41,6 +46,7 @@ object App {
       env <- readEnv
       state <- env.gameService.currentState.toAppOp
       line <- env.console.readLine(s">>> ${state.player.denomination} play:").toAppOp
+      _ <- Validations.inputIsToEnd(line).toAppOp
       positions <- Position(line).toAppOp
     } yield UserInputPlay(positions._1, positions._2)
 

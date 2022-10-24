@@ -2,18 +2,22 @@ package chess.common
 
 import cats.data._
 import cats.implicits.catsSyntaxEq
-import chess.{File, Rank}
 import chess.app.Configuration.IsValid
 import chess.app.Player
 import chess.board.Board
 import chess.board.Board.dimension
 import chess.pieces.Piece
 import chess.positions.Position
+import chess.{File, Rank}
 
 object Validations {
 
   def inputHas4Chars(line: String): IsValid[String] =
     Validated.condNec(line.toCharArray.length == 4, line, "Users input does not have 4 characters!")
+
+  // If line is "END" will be Invalid, which breaks game flow
+  def inputIsToEnd(line: String): IsValid[String] =
+    Validated.condNec(line != "END", line, "End Game!")
 
   def inputHasCorrectFormat(line: String): IsValid[(File, Rank, File, Rank)] =
     Validated.condNec(
