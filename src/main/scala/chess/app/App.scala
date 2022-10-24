@@ -1,19 +1,15 @@
-package chess
+package chess.app
 
 import cats.MonadError
 import cats.data.Validated
 import cats.implicits._
 import chess.app.Configuration.{AppOp, Error, readEnv}
-import chess.app.Console.{Error => ConsoleError}
-import chess.app.Move
 import chess.app.Syntax._
 import chess.board.Board
 import chess.positions.Position
+import chess.app.Console.{Error => ConsoleError}
 
-//  TODO: Game is not 100% working, because of:
-//    - There is no logic to evaluate check-mate, so code runs forever.
-
-object Controller {
+object App {
   case class UserInputPlay(
     from: Position,
     to: Position
@@ -91,12 +87,11 @@ object Controller {
       weHaveWinner <- isGameFinished
     } yield weHaveWinner
 
-  def isGameFinished: AppOp[Boolean] = {
+  def isGameFinished: AppOp[Boolean] =
     for {
       env <- readEnv
       _ <- env.gameService.switchTurns().toAppOp
       // simulates the check-mate logic
       res <- Validated.valid(false).toAppOp
     } yield res
-  }
 }

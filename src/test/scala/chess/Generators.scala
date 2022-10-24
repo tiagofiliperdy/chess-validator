@@ -14,9 +14,6 @@ import org.scalacheck.{Arbitrary, Gen}
 
 trait Generators {
 
-  implicit def ioArb[A](implicit aArb: Arbitrary[A]): Arbitrary[IO[A]] =
-    Arbitrary(aArb.arbitrary.map(IO(_)))
-
   /**
     * Only creates valid Position even though file and rank are not validated
     */
@@ -113,6 +110,19 @@ trait Generators {
       board <- arbBoard.arbitrary
       player <- arbPlayer.arbitrary
     } yield State((_: GameState) => (GameState(board, List(board.board), player), a))
+  }
+
+  implicit def ioArb[A](implicit aArb: Arbitrary[A]): Arbitrary[IO[A]] =
+    Arbitrary(aArb.arbitrary.map(IO(_)))
+
+  implicit def gameStateArb(
+    implicit arbBoard: Arbitrary[Board],
+    arbPlayer: Arbitrary[Player]
+  ): Arbitrary[GameState] = Arbitrary {
+    for {
+      board <- arbBoard.arbitrary
+      player <- arbPlayer.arbitrary
+    } yield GameState(board, List(board.board), player)
   }
 
 }
